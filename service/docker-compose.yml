@@ -1,0 +1,27 @@
+services:
+  snipbox:
+    build:
+      context: .
+    image: snipbox:1.0.0
+    container_name: snipbox
+    ports:
+      # host:container — the examples use 8000-8302, so this one sits at 8400.
+      - "8400:8080"
+    volumes:
+      - snipbox-data:/data
+    # The app only ever writes inside /data, which is the volume.
+    read_only: true
+    restart: unless-stopped
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request,sys; sys.exit(0 if urllib.request.urlopen('http://127.0.0.1:8080/health', timeout=2).status == 200 else 1)"
+      interval: 30s
+      timeout: 3s
+      start_period: 5s
+      retries: 3
+
+volumes:
+  snipbox-data:
